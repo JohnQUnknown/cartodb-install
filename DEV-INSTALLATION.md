@@ -4,20 +4,7 @@
 
 [Documentation](https://cartodb.com/docs/)
 
-This is mostly a copy of the official CartoDB [docs](http://cartodb.readthedocs.org/en/latest/install.html), with notes added for our environment.
-
-Before starting the official install instructions, this list must be followed:
-
-- Make sure Ubuntu version matches that noted on the CartoDB github page (12.04 at the time of this writing 6/2015)
-- If inside corporate proxy:
-  - Procure proxy client root-ca certificates
-  - `cp` cert file(s) into `/usr/local/share/ca-certificates`
-  - run `sudo update-ca-certificates`
-  - If using GUI Ubuntu:
-    - Launch Firefox, import both certs into Firefox settings
-    - Download & install Chrome, then import certs into Chrome settings
-
-Note: if behind corporate proxy, github repositories likely must be accessed via SSH instead of SSL; therefore an SSH key must be generated and imported into a github account.
+Official CartoDB [docs](http://cartodb.readthedocs.org/en/latest/install.html).
 
 For any doubt about the process you can ask in the [Google
 Group](https://groups.google.com/forum/#!forum/cartodb).
@@ -27,182 +14,232 @@ Group](https://groups.google.com/forum/#!forum/cartodb).
 First, install git, then download CartoDB by cloning this repository:
 
 ```bash
-$ sudo apt-get install git
-$ git clone --recursive git@github.com:CartoDB/cartodb.git
+ apt-get install git
+git clone --recursive https://github.com/CartoDB/cartodb.git
 ```
 
 Or you can just [download the CartoDB zip
 file](https://github.com/CartoDB/cartodb/archive/master.zip).
 
+## CartoDB depends on the following
 
-## What does CartoDB depend on? #
+*   Ubuntu 12.04
+*   Postgres 9.3.x (with plpythonu extension)
+*   [PostgreSQL extension](http://github.com/CartoDB/cartodb-postgresql)
+*   Redis 2.2+
+*   Ruby 1.9.3
+*   Node.js 0.10.x
+*   CartoDB-SQL-API
+*   GEOS 3.3.4
+*   GDAL 1.10.x (Starting with CartoDB 2.2.0)
+*   PostGIS 2.1.x
+*   Mapnik 2.1.1
+*   Windshaft-cartodb
+*   ImageMagick 6.6.9+ (for the testsuite)
 
-  - Ubuntu 12.04
-  - Postgres 9.3.x (with plpythonu extension)
-  - [cartodb-postgresql](https://github.com/CartoDB/cartodb-postgresql) extension
-  - Redis 2.2+
-  - Ruby 1.9.3
-  - Node.js 0.10.x
-  - CartoDB-SQL-API
-  - GEOS 3.3.4
-  - GDAL 1.10.x (Starting with CartoDB 2.2.0)
-  - PostGIS 2.1.x
-  - Mapnik 2.1.1
-  - Windshaft-cartodb
-  - ImageMagick 6.6.9+ (for the testsuite)
-
-
-## Add CartoDB [PPA](https://help.ubuntu.com/community/PPA)s ##
+## Add CartoDB [PPA](https://help.ubuntu.com/community/PPA)s
 
 First, retrieve new lists of packages:
-```
-sudo apt-get update
+
+```bash
+apt-get update
 ```
 
 Install python software properties to be able to run `add-apt-repository`
-```
-sudo apt-get install python-software-properties
+
+```bash
+ apt-get install python-software-properties
 ```
 
 Add CartoDB Base PPA
+
 ```bash
-sudo add-apt-repository ppa:cartodb/base
+add-apt-repository ppa:cartodb/base
 ```
 
 Add CartoDB GIS PPA
+
 ```bash
-sudo add-apt-repository ppa:cartodb/gis
+add-apt-repository ppa:cartodb/gis
 ```
 
 Add CartoDB Mapnik PPA
+
 ```bash
-sudo add-apt-repository ppa:cartodb/mapnik
+add-apt-repository ppa:cartodb/mapnik
 ```
 
 Add CartoDB Node PPA
+
 ```bash
-sudo add-apt-repository ppa:cartodb/nodejs
+add-apt-repository ppa:cartodb/nodejs
 ```
 
 Add CartoDB Redis PPA
+
 ```bash
-sudo add-apt-repository ppa:cartodb/redis
+add-apt-repository ppa:cartodb/redis
 ```
 
 Add CartoDB PostgreSQL PPA
+
 ```bash
-sudo add-apt-repository  ppa:cartodb/postgresql-9.3
-```
-Resfresh repositories to use the PPAs
-```bash
-sudo apt-get update
+add-apt-repository  ppa:cartodb/postgresql-9.3
 ```
 
-## Some dependencies ##
+Resfresh repositories to use the PPAs
+
+```bash
+apt-get update
+```
+
+## Some dependencies
 
 Installations assume you use UTF8, you can set it like this:
+
 ```bash
-echo -e 'LANG=en_US.UTF-8\nLC_ALL=en_US.UTF-8' | sudo tee /etc/default/locale
+ echo -e 'LANG=en_US.UTF-8\nLC_ALL=en_US.UTF-8' | tee /etc/default/locale
 source /etc/default/locale
 ```
 
-[make](https://help.ubuntu.com/community/CompilingEasyHowTo) is required to compile sources
+[make](https://help.ubuntu.com/community/CompilingEasyHowTo) is required to
+compile sources
+
 ```bash
-sudo apt-get install build-essential checkinstall
+ apt-get install build-essential checkinstall
 ```
 
 unp is required for archive file upload support
 
 ```bash
-sudo apt-get install unp
+apt-get install unp
 ```
 
 zip is required for table exports
+
 ```bash
-sudo apt-get install zip
+ apt-get install zip
 ```
 
-## Install GEOS ##
+## Install GEOS
+
 [GEOS](http://trac.osgeo.org/geos) is required for geometry function support.
 
 ```bash
-sudo apt-get install libgeos-c1 libgeos-dev
+ apt-get install libgeos-c1 libgeos-dev
 ```
 
-## Install GDAL ##
+**Note:** It seems like `libgeos-dev` depends on `libgeos-c1v5` but this one
+won't get installed as per the output:
+
+```bash
+ The following packages have unmet dependencies:
+libgeos-dev : Depends: libgeos-c1v5 (= 3.5.0-1cdb2) but it is not going to be installed
+E: Unable to correct problems, you have held broken packages.
+```
+
+I tried installing the dependency along with the
+others but got the following error:
+
+```bash
+ root@ubuntu-1gb-nyc2-01:~/projects# apt-get -y -q install libgeos-c1 libgeos-dev libgeos-c1v5
+Reading package lists...
+Building dependency tree...
+Reading state information...
+Some packages could not be installed. This may mean that you have
+requested an impossible situation or if you are using the unstable
+distribution that some required packages have not yet been created
+or been moved out of Incoming.
+The following information may help to resolve the situation:
+
+The following packages have unmet dependencies:
+libgeos-c1v5 : Breaks: libgeos-c1 (< 3.4.2-8~) but 3.4.2-2cdb1 is to be installed
+E: Unable to correct problems, you have held broken packages.
+```
+
+I will install GEOS manually instead as per the [build instructions](http://trac.osgeo.org/geos/wiki/BuildingOnUnixWithAutotools).
+
+## Install GDAL
+
 [GDAL](http://www.gdal.org) is requires for raster support.
 
 ```bash
-sudo apt-get install gdal-bin libgdal1-dev
+apt-get install gdal-bin libgdal1-dev
 ```
 
-## Install JSON-C ##
+## Install JSON-C
+
 [JSON-C](http://oss.metaparadigm.com/json-c) is required for GeoJSON support.
 
 ```bash
-sudo apt-get install libjson0 python-simplejson libjson0-dev
+apt-get install libjson0 python-simplejson libjson0-dev
 ```
 
-## Install PROJ ##
+## Install PROJ
+
 [PROJ4](http://trac.osgeo.org/proj) is required for reprojection support.
 
 ```bash
-sudo apt-get install proj-bin proj-data libproj-dev
+apt-get install proj-bin proj-data libproj-dev
 ```
 
-## Install PostgreSQL ##
+## Install PostgreSQL
+
 [PostgreSQL](http://www.postgresql.org) is the relational database
 that powers CartoDB.
 
 ```bash
-sudo apt-get install postgresql-9.3 postgresql-client-9.3 postgresql-contrib-9.3 postgresql-server-dev-9.3
+apt-get install postgresql-9.3 postgresql-client-9.3 postgresql-contrib-9.3 postgresql-server-dev-9.3
 ```
 
 plpython is required for Python support
 
 ```bash
-sudo apt-get install postgresql-plpython-9.3
+apt-get install postgresql-plpython-9.3
 ```
 
-
-Currently there is an error with credential-based connections for development, and all connections must be performed using method "trust" inside config file `pg_hba.conf`.
+Currently there is an error with credential-based connections for development
+and all connections must be performed using method "trust"
+inside config file `pg_hba.conf`.
 
 ```bash
 cd /etc/postgresql/9.3/main
-sudo vim pg_hba.conf
+vim pg_hba.conf
 ```
 
 And change inside all local connections from peer/md5/... to trust.
 
 Then restart postgres **twice** (seriously) and you're done.
+
 ```bash
-sudo /etc/init.d/postgresql restart
-```
-```bash
-sudo /etc/init.d/postgresql restart
+/etc/init.d/postgresql restart
 ```
 
+```bash
+/etc/init.d/postgresql restart
+```
 
-## Install PostGIS ##
+## Install PostGIS
+
 [PostGIS](http://postgis.net) is
 the geospatial extension that allows PostgreSQL to support geospatial
 queries. This is the heart of CartoDB!
 
 ```bash
 cd /usr/local/src
-sudo wget http://download.osgeo.org/postgis/source/postgis-2.1.7.tar.gz
-sudo tar -xvzf postgis-2.1.7.tar.gz
-cd postgis-2.1.7
-sudo ./configure --with-raster --with-topology
-sudo make
-sudo make install
+wget http://download.osgeo.org/postgis/source/postgis-2.1.8.tar.gz
+tar -xvzf postgis-2.1.8.tar.gz
+cd postgis-2.1.8
+./configure --with-raster --with-topology
+make
+make install
 ```
 
 Finally, CartoDB depends on a geospatial database template named
 `template_postgis`.
 
 ```bash
-sudo su - postgres
+su - postgres
 POSTGIS_SQL_PATH=`pg_config --sharedir`/contrib/postgis-2.1
 createdb -E UTF8 template_postgis
 createlang -d template_postgis plpgsql
@@ -214,45 +251,50 @@ psql -d template_postgis -c "GRANT ALL ON spatial_ref_sys TO PUBLIC;"
 exit
 ```
 
-## Install cartodb-postgresql ##
+## Install cartodb-postgresql
 
 ```bash
 cd /tmp
 git clone git@github.com:CartoDB/pg_schema_triggers.git
 cd pg_schema_triggers
-sudo make all install PGUSER=postgres
-sudo make installcheck PGUSER=postgres # to run tests
+make all install PGUSER=postgres
+make installcheck PGUSER=postgres # to run tests
 cd ..
 git clone git@github.com:CartoDB/cartodb-postgresql.git
 cd cartodb-postgresql
 git checkout cdb
-sudo make all install
-sudo PGUSER=postgres make installcheck # to run tests
+make all install
+PGUSER=postgres make installcheck # to run tests
 ```
 
-**NOTE:** if test_ddl_triggers fails it's likely due to an incomplete installation of schema_triggers.
-You need to add schema_triggers.so to the shared_preload_libraries setting in postgresql.conf :
+**NOTE:** if test_ddl_triggers fails it's likely due to an incomplete
+installation of schema_triggers.
+You need to add schema_triggers.so to the shared_preload_libraries setting in
+postgresql.conf :
 
-```
-$ sudo vim /etc/postgresql/9.3/main/postgresql.conf
+```bash
+ vim /etc/postgresql/9.3/main/postgresql.conf
 ...
 shared_preload_libraries = 'schema_triggers.so'
 
-$ sudo service postgresql restart # restart postgres
+$ service postgresql restart # restart postgres
 ```
 
 After this change the 2nd installcheck of cartodb-postresql should be OK.
 
-Check https://github.com/cartodb/cartodb-postgresql/ for further reference
+Check [the repo](https://github.com/cartodb/cartodb-postgresql/) for further
+reference
 
-## Install Ruby ##
+## Install Ruby
 
-CartoDB is a Ruby on Rails app, so Ruby must be installed. I found [rbenv](https://github.com/sstephenson/rbenv#installation) the easiest way.
+CartoDB is a Ruby on Rails app, so Ruby must be installed. I found
+[rbenv](https://github.com/sstephenson/rbenv#installation) the easiest way.
 
 To install rbenv and Ruby:
 
 ### rbenv
-From the official guide on https://github.com/sstephenson/rbenv#installation
+
+From the official [guide](https://github.com/sstephenson/rbenv#installation)
 
 ```bash
 git clone git@github.com:sstephenson/rbenv.git ~/.rbenv
@@ -267,7 +309,9 @@ type rbenv
 #=> "rbenv is a function"
 ```
 
-Now, try `rbenv install -l`. If you get an error about `install` not being a command, [another small plugin](https://github.com/sstephenson/ruby-build#readme) needs to be installed:
+Now, try `rbenv install -l`. If you get an error about `install` not being a
+command, [another small plugin](https://github.com/sstephenson/ruby-build#readme)
+needs to be installed:
 
 ```bash
 git clone git@github.com:sstephenson/ruby-build.git ~/.rbenv/plugins/ruby-build
@@ -286,13 +330,14 @@ Then, to install bundler simply run:
 gem install bundler
 ```
 
-## Install Node.js ##
+## Install Node.js
+
 The tiler API and the SQL API are both [Node.js](http://nodejs.org) apps.
 
 ```bash
-sudo add-apt-repository ppa:cartodb/nodejs-010
-sudo apt-get update
-sudo apt-get install nodejs
+add-apt-repository ppa:cartodb/nodejs-010
+apt-get update
+apt-get install nodejs
 ```
 
 We currently run our node apps against version 0.10. You can install [NVM](https://github.com/creationix/nvm)
@@ -303,23 +348,27 @@ to handle multiple versions in the same system:
 curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.25.4/install.sh | bash
 ```
 
-(I know, [curl-pipe-bash](http://curlpipesh.tumblr.com/)... [here's the script](https://github.com/creationix/nvm/blob/v0.25.4/install.sh) for safety's sake.)
+(I know, [curl-pipe-bash](http://curlpipesh.tumblr.com/)...
+[here's the script](https://github.com/creationix/nvm/blob/v0.25.4/install.sh)
+for safety's sake.)
 
 Then you can install and use any version, for example:
+
 ```bash
 nvm install v0.10
 nvm use 0.10
 ```
 
+## Install Redis
 
-## Install Redis ##
 Components of CartoDB, like Windshaft or the SQL API depend on [Redis](http://redis.io).
 
 ```bash
-sudo apt-get install redis-server
+apt-get install redis-server
 ```
 
-Redis needs to be made persistent; see [here](http://redis.io/topics/persistence) for details. First, make the config file:
+Redis needs to be made persistent; see [here](http://redis.io/topics/persistence)
+for details. First, make the config file:
 
 ```bash
 cd wherever/cartodb
@@ -327,55 +376,73 @@ nano redis.conf
 ```
 
 Then, add this line to configure RDB persistence:
+
 ```bash
 save 60 1000
+bind 127.0.0.1
 ```
 
-This configuration seems to work in development, however if any issues arise with Redis it may need to be tweaked.
+This configuration seems to work in development, however if any issues arise
+with Redis it may need to be tweaked.
 
-## Install Python dependencies ##
+## Install Python dependencies
+
 This needs to be done from the cartodb local copy.
 To install the Python modules that CartoDB depends on, you can use
 `easy_install`.
 
 You need to have some dependencies installed before using pip:
+
 ```bash
-sudo apt-get install python2.7-dev
-sudo apt-get install build-essential
-sudo su
+apt-get install python2.7-dev
+apt-get install build-essential
 apt-get install python-setuptools
+easy_install pip
 ```
 
-Note, pip seems to be cranky about SSL, so we have to point it directly to our Zscaler cert (if one fails, try the other). Also, I was unable to overcome ssl/cert issues with `easy_install`, so I downloaded a local copy of the installer, unpacked it, altered the `get-pip.py` installer to point to the original unpacked package, and ran in that way.
-
 ```bash
-# download local copies of the pip package
-# and the pip installer
-# edit installer to call local file
-# then run installer
-
 export CPLUS_INCLUDE_PATH=/usr/include/gdal
 export C_INCLUDE_PATH=/usr/include/gdal
-pip install --no-use-wheel --cert /path/to/Zscaler/cert -r python_requirements.txt
+pip install --no-use-wheel -r python_requirements.txt
 exit
 ```
 
 If the previous step fails, try this alternative:
+
 ```bash
 export CPLUS_INCLUDE_PATH=/usr/include/gdal
 export C_INCLUDE_PATH=/usr/include/gdal
-sudo pip install --no-install GDAL
+pip install --no-install GDAL
 cd /tmp/pip_build_root/GDAL
-sudo python setup.py build_ext --include-dirs=/usr/include/gdal
-sudo pip install --no-download GDAL
+python setup.py build_ext --include-dirs=/usr/include/gdal
+pip install --no-download GDAL
 ```
 
-## Install Mapnik ##
+## Install Mapnik
+
 [Mapnik](http://mapnik.org) is an API for creating beautiful maps.
 CartoDB uses Mapnik for creating and styling map tiles.
 
+Before installing Mapnik you must ensure that you have enought RAM memory and
+SWAP or install a SWAP file big enough to handle the installation.
+
+In this case we're creating a 4GB swalfile.
+
 ```bash
-sudo apt-get install libmapnik-dev python-mapnik mapnik-utils
+ dd if=/dev/zero of=/swapfile bs=1024 count=4194304
+ mkswap /swapfile
+ swapon /swapfile
+```
+
+And then edit the `/etc/fstab` file to include our swapfile (for persistency
+purposes).
+
+````bash
+/swapfile swap  swap  defaults  0 0
+```
+
+```bash
+apt-get install libmapnik-dev python-mapnik mapnik-utils
 ```
 
 ## Install CartoDB SQL API ##
@@ -384,13 +451,9 @@ component powers the SQL queries over HTTP. To install it:
 
 ```bash
 cd ~
-git clone git@github.com:CartoDB/CartoDB-SQL-API.git
+git clone https://github.com/CartoDB/CartoDB-SQL-API.git
 cd CartoDB-SQL-API
 git checkout master
-
-# this is insecure, but I couldn't find
-# another way around cert issues without it
-npm config set strict-ssl false
 npm install
 cp config/environments/development.js.example config/environments/development.js
 ```
@@ -408,14 +471,14 @@ component powers the CartoDB Maps API.
 Apparently, Pango is required for Windshaft's installation ([source](https://github.com/CartoDB/cartodb/issues/2550)), but hasn't been installed up to this point:
 
 ```bash
-sudo apt-get install libpango1.0-dev
+apt-get install libpango1.0-dev
 ```
 
 Then, to install Windshaft:
 
 ```bash
 cd ~
-git clone git://github.com/CartoDB/Windshaft-cartodb.git
+git clone https://github.com/CartoDB/Windshaft-cartodb.git
 cd Windshaft-cartodb
 git checkout master
 npm install
@@ -430,7 +493,7 @@ node app.js development
 ## Install ImageMagick ##
 
 ```bash
-sudo apt-get install imagemagick
+apt-get install imagemagick
 ```
 
 ## Activate Sync Tables ##
@@ -440,7 +503,6 @@ For some reason, the default install is configured as a free-tier account, which
 You can enable them in the interface for all the users in your local install by updating the `sync_tables_enabled` row on the `users` table:
 
 ```bash
-sudo su
 su postgres
 psql carto_db_development
 
@@ -477,17 +539,17 @@ via the Maps API.
 
 Add CartoDB Varnish PPA and install it:
 ```bash
-sudo add-apt-repository  ppa:cartodb/varnish
-sudo apt-get update
-sudo apt-get install varnish=2.1.5.1-cdb1 #or any version <3.x
+add-apt-repository  ppa:cartodb/varnish
+apt-get update
+apt-get install varnish=2.1.5.1-cdb1 #or any version <3.x
 ```
 
 Varnish should allow telnet access in order to work with CartoDB, so you need to edit the `/etc/default/varnish` file and in the `DAEMON_OPTS` variable remove the `-S /etc/varnish/secret \` line.
 
 ### Raster import support
-Raster importer needs `raster2pgsql` to be in your path. You can check whether it's available by running `which raster2pgsql`. If it's not, you should link it: `$ sudo ln -s /usr/local/src/postgis-2.1.7/raster/loader/raster2pgsql /usr/bin/`.
+Raster importer needs `raster2pgsql` to be in your path. You can check whether it's available by running `which raster2pgsql`. If it's not, you should link it: `$ ln -s /usr/local/src/postgis-2.1.7/raster/loader/raster2pgsql /usr/bin/`.
 
-Access to temporary dir is also needed. Depending on your installation you might also need to run `sudo chown 501:staff /usr/local/src/postgis-2.1.7/raster/loader/.libs` (maybe replacing `501:staff` with your installation /usr/local/src/postgis-2.1.7/raster/loader/ group and owner).
+Access to temporary dir is also needed. Depending on your installation you might also need to run `chown 501:staff /usr/local/src/postgis-2.1.7/raster/loader/.libs` (maybe replacing `501:staff` with your installation /usr/local/src/postgis-2.1.7/raster/loader/ group and owner).
 
 ## Install problems and common solutions #
 
@@ -549,7 +611,7 @@ cp config/database.yml.sample config/database.yml
 vim config/database.yml
 
 # Add entries to /etc/hosts needed in development
-echo "127.0.0.1 ${SUBDOMAIN}.localhost.lan" | sudo tee -a /etc/hosts
+echo "127.0.0.1 ${SUBDOMAIN}.localhost.lan" | tee -a /etc/hosts
 
 # Create a development user
 #
